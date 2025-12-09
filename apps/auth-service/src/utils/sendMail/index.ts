@@ -15,9 +15,43 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 // Render an EJS email template
 
-const renderEmailTemplate = async(template: String, data: Record<string, any> ): Promise<String> => {
-    const templatePath = path.join
-}
+const renderEmailTemplate = async (
+  templateName: String,
+  data: Record<string, any>
+): Promise<String> => {
+  const templatePath = path.join(
+    process.cwd(),
+    "src",
+    "utils",
+    "email-templates",
+    `${templateName}.ejs`
+  );
+
+  return ejs.renderFile(templatePath, data);
+};
+
+// send an email using nodemailer
+
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  templateName: string,
+  data: Record<string, any>
+) => {
+  try {
+    const html = await renderEmailTemplate(templateName, data);
+
+    await transporter.sendMail({
+      from: `<${process.env.SMTP_USER}`,
+      to,
+      subject,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.log("Error send email: ", error);
+    return false;
+  }
+};
